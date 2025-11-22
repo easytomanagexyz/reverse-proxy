@@ -1,0 +1,46 @@
+name: Deploy Reverse Proxy to EC2
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Copy SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+      
+      - name: Deploy to EC2
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST '
+            set -e
+            
+            # Create directory if it doesn't exist
+            mkdir -p /home/ubuntu/www/reverse-proxy
+            cd /home/ubuntu/www/reverse-proxy
+            
+            # Clone repo if it doesn't exist, otherwise pull
+            if [ ! -d ".git" ]; then
+              echo "🔽 Cloning repository..."
+              git clone https://github.com/easytomanagexyz/reverse-proxy.git .
+            else
+              echo "🔄 Pulling latest changes..."
+              git fetch --all
+              git reset --hard origin/main
+            fi
+            
+            echo "🐳 Restarting Docker containers..."
+            docker-compose down || true
+            docker-compose up -d
+            
+            echo "✅ Reverse proxy deployment completed!"
+          '
