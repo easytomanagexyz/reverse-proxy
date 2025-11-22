@@ -1,0 +1,37 @@
+# SSL Certificates
+*.pem
+*.crt
+*.key
+*.csr
+
+# Certbot
+certbot/
+letsencrypt/
+
+# Logs
+*.log
+nginx/logs/
+logs/
+
+# Docker
+.docker/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.backup
