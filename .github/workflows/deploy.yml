@@ -39,8 +39,7 @@ jobs:
           fi
           
           echo "🐳 Restarting Docker containers..."
-          docker-compose down || true
-          docker-compose up -d
-          
+                        /usr/bin/docker-compose down || true
+              /usr/bin/docker-compose up -d          
           echo "✅ Reverse proxy deployment completed!"
           '
