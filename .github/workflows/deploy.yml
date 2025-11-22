@@ -22,25 +22,25 @@ jobs:
           USERNAME: ${{ secrets.EC2_USERNAME }}
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST '
-            set -e
-            
-            # Create directory if it doesn't exist
-            mkdir -p /home/ubuntu/www/reverse-proxy
-            cd /home/ubuntu/www/reverse-proxy
-            
-            # Clone repo if it doesn't exist, otherwise pull
-            if [ ! -d ".git" ]; then
-              echo "🔽 Cloning repository..."
-              git clone https://github.com/easytomanagexyz/reverse-proxy.git .
-            else
-              echo "🔄 Pulling latest changes..."
-              git fetch --all
-              git reset --hard origin/main
-            fi
-            
-            echo "🐳 Restarting Docker containers..."
-            docker-compose down || true
-            docker-compose up -d
-            
-            echo "✅ Reverse proxy deployment completed!"
+          set -e
+          
+          # Navigate to or create directory
+          mkdir -p /home/ubuntu/www/reverse-proxy
+          cd /home/ubuntu/www/reverse-proxy
+          
+          # Check if it's a git repository, if not clone it
+          if [ ! -d ".git" ]; then
+            echo "🔽 Cloning repository..."
+            git clone https://github.com/easytomanagexyz/reverse-proxy.git .
+          else
+            echo "🔄 Pulling latest changes..."
+            git fetch --all
+            git reset --hard origin/main
+          fi
+          
+          echo "🐳 Restarting Docker containers..."
+          docker-compose down || true
+          docker-compose up -d
+          
+          echo "✅ Reverse proxy deployment completed!"
           '
