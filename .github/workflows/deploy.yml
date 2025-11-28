@@ -8,48 +8,42 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-  - name: Checkout code
-    uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-  - name: Copy SSH key
-    run: |
-      echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
-      chmod 600 key.pem
+      - name: Add SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
 
-  - name: Deploy to EC2
-    env:
-      HOST: ${{ secrets.EC2_HOST }}
-      USERNAME: ${{ secrets.EC2_USERNAME }}
-    run: |
-      ssh -i key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST '
-        set -e
+      - name: Deploy to EC2
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USERNAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST '
+          set -e
 
-        # Go to reverse-proxy directory (matches what you actually use on EC2)
-        mkdir -p /home/ubuntu/www/nginx-reverse-proxy
-        cd /home/ubuntu/www/nginx-reverse-proxy
+          echo "📁 Ensuring target directory exists..."
+          mkdir -p /home/ubuntu/www/nginx-reverse-proxy
+          cd /home/ubuntu/www/nginx-reverse-proxy
 
-        # If not a git repo, clone; otherwise hard-reset to main
-        if [ ! -d ".git" ]; then
-          echo "🔽 Cloning repository..."
-          git clone https://github.com/easytomanagexyz/reverse-proxy.git .
-        else
-          echo "🔄 Pulling latest changes..."
-          git fetch --all
-          git reset --hard origin/main
-        fi
+          echo "🔄 Syncing Git repository..."
+          if [ ! -d ".git" ]; then
+            git clone https://github.com/easytomanagexyz/reverse-proxy.git .
+          else
+            git fetch --all
+            git reset --hard origin/main
+          fi
 
-        echo "🐳 Restarting Docker containers..."
+          echo "🐳 Restarting reverse proxy with Docker Compose..."
+          if command -v docker compose >/dev/null 2>&1; then
+            docker compose down || true
+            docker compose up -d
+          else
+            sudo /usr/bin/docker-compose down || true
+            sudo /usr/bin/docker-compose up -d
+          fi
 
-        # Use docker compose (plugin) if available, otherwise docker-compose
-        if command -v docker compose >/dev/null 2>&1; then
-          docker compose down || true
-          docker compose up -d
-        else
-          sudo /usr/bin/docker-compose down || true
-          sudo /usr/bin/docker-compose up -d
-        fi
-
-        echo "✅ Reverse proxy deployment completed!"
-      '
-
-                
+          echo "✅ Reverse proxy deployment completed!"
+        '
