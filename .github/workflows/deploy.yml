@@ -21,7 +21,7 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USERNAME: ${{ secrets.EC2_USERNAME }}
         run: |
-          ssh -i key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST '
+          ssh -i key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST 'bash -s' << 'EOF'
           set -e
 
           echo "📁 Ensuring target directory exists..."
