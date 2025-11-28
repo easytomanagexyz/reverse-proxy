@@ -1,26 +1,22 @@
 version: '3.8'
-
 services:
-  reverse-proxy:
-    image: nginx:latest
-    container_name: reverse-proxy
-    restart: always
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - /etc/letsencrypt:/etc/letsencrypt
-    ports:
-      - "80:80"
-      - "443:443"
-    networks:
-      - backend-network
-
-  certbot:
-    image: certbot/certbot
-    command: certonly --webroot --webroot-path=/var/www/html --email your@email --agree-tos --no-eff-email -d api.easytomanage.xyz -d admin-api.easytomanage.xyz
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt
-      - /var/www/html:/var/www/html
-
+ reverse-proxy:
+  image: nginx:latest
+  container_name: reverse-proxy
+  restart: always
+  volumes:
+   - ./nginx.conf:/etc/nginx/conf.d/default.conf
+   - /etc/letsencrypt:/etc/letsencrypt
+  ports:
+   - "80:80"
+   - "443:443"
+  networks:
+   - backend-network
+ certbot:
+  image: certbot/certbot
+  command: certonly --standalone --email your@email.com --agree-tos --no-eff-email -d eatwithme.easytomanage.xyz -d admin.easytomanage.xyz
+  volumes:
+   - /etc/letsencrypt:/etc/letsencrypt
 networks:
-  backend-network:
-    external: true
+ backend-network:
+  external: true
